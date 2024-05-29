@@ -38,12 +38,12 @@ namespace cs2
 
 		QWORD matchmakingdll;
 
-		//offsets from a2x dumper but i could probably add it in later
+		//offsets from a2x dumper but i could probably add it in later  (-edit- nvm im a paster idc enough)
 		DWORD m_bBombPlanted = 0x9DD;				// bool
 		DWORD m_bBombDropped = 0x9DC;				// bool
-		DWORD dwGameRules = 0x1924EF0;				//pointer
+		DWORD dwGameRules = 0x1A00D08;				//pointer
 
-		DWORD dwGlobalVars = 0x172EEE0;				//pointer
+		DWORD dwGlobalVars = 0x1801BF0;				//pointer
 
 		QWORD game_rules;
 		QWORD global_vars;
@@ -66,6 +66,8 @@ namespace cs2
 	}
 	namespace netvars
 	{
+		static int m_nTickBase = 0x600; // uint32
+		static int m_flSimulationTime = 0x398; // float32
 		static int m_entitySpottedState = 0;//m_entitySpottedState = 0x1698;
 		static int m_bSpotted = 0; //m_bSpotted = 0x8;
 		static int m_bSpottedByMask = 0; // m_bSpottedByMask = 0xC;
@@ -85,8 +87,8 @@ namespace cs2
 		static int m_modelState = 0;
 		static int m_aimPunchCache = 0;
 		static int m_iShotsFired = 0;
-		//static int m_angEyeAngles = 0;
-		static int m_iIDEntIndex = 0;
+		//static int m_angEyeAngles = 0;	unused and broken as of now
+		static int m_iIDEntIndex = 0x13A8;	//function broke so were getting it from a2x dumper like a paster :)
 		static int m_iOldIDEntIndex = 0x15BC;
 		static int m_vOldOrigin = 0;
 		static int m_pClippingWeapon = 0;
@@ -363,6 +365,7 @@ static BOOL cs2::initialize(void)
 			{
 				LOG("%s, %x\n", netvar_name, *(int*)(entry + 0x08 + 0x10));
 				netvars::m_vecViewOffset = *(int*)(entry + 0x08 + 0x10);
+				if (netvars::m_vecOrigin > 0x200) netvars::m_vecOrigin = 0;
 			}
 			else if (!netvars::m_aimPunchCache && !strcmpi_imp(netvar_name, "m_aimPunchCache") && network_enable)
 			{
@@ -404,11 +407,13 @@ static BOOL cs2::initialize(void)
 				LOG("%s, %x\n", netvar_name, *(int*)(entry + 0x08 + 0x10));
 				netvars::m_vecOrigin = *(int*)(entry + 0x08 + 0x10);
 			}
+			/*
 			else if (!netvars::m_iIDEntIndex && !strcmpi_imp(netvar_name, "m_iIDEntIndex") && network_enable)
 			{
 				LOG("%s, %x\n", netvar_name, *(int*)(entry + 0x08 + 0x10));
 				netvars::m_iIDEntIndex = *(int*)(entry + 0x08 + 0x10);
 			}
+			*/
 			else if (!netvars::m_vOldOrigin && !strcmpi_imp(netvar_name, "m_vOldOrigin"))
 			{
 				LOG("%s, %x\n", netvar_name, *(int*)(entry + 0x08));
@@ -593,12 +598,15 @@ static BOOL cs2::initialize(void)
 				{
 					LOG("%s, %x\n", netvar_name, *(int*)(dos_header + j + 0x08 + 0x10));
 					netvars::m_vecOrigin = *(int*)(dos_header + j + 0x08 + 0x10);
+					if (netvars::m_vecOrigin > 0x200) netvars::m_vecOrigin = 0;
 				}
+				/*
 				else if (!netvars::m_iIDEntIndex && !strcmpi_imp(netvar_name, "m_iIDEntIndex") && network_enable)
 				{
 					LOG("%s, %x\n", netvar_name, *(int*)(dos_header + j + 0x08 + 0x10));
 					netvars::m_iIDEntIndex = *(int*)(dos_header + j + 0x08 + 0x10);
 				}
+				*/
 				else if (!netvars::m_vOldOrigin && !strcmpi_imp(netvar_name, "m_vOldOrigin"))
 				{
 					LOG("%s, %x\n", netvar_name, *(int*)(dos_header + j + 0x10));
@@ -629,12 +637,14 @@ static BOOL cs2::initialize(void)
 					LOG("%s, %x\n", netvar_name, *(int*)(dos_header + j + 0x08 + 0x10));
 					netvars::m_hActiveWeapon = *(int*)(dos_header + j + 0x08 + 0x10);
 				}
+				
 				else if (
 					(netvars::m_pWeaponServices < 0x1000 || netvars::m_pWeaponServices > 0x2000) &&
 					!strcmpi_imp(netvar_name, "m_pWeaponServices"))
 				{
 					netvars::m_pWeaponServices = *(int*)(dos_header + j + 0x10);
 				}
+
 				else if (!netvars::m_sSanitizedPlayerName && network_enable && !strcmpi_imp(netvar_name, "m_sSanitizedPlayerName"))
 				{
 					LOG("%s, %x\n", netvar_name, *(int*)(dos_header + j + 0x08 + 0x10));
@@ -790,6 +800,7 @@ QWORD cs2::entity::get_client_entity(int index)
 }
 BOOL cs2::entity::is_player(QWORD controller)
 {
+	/*
 	if (vm::get_target_os() == VmOs::Linux)
 	{
 		return 1;
@@ -804,6 +815,9 @@ BOOL cs2::entity::is_player(QWORD controller)
 	// cc
 	//
 	return value == 0xCCC301B0;
+	*/
+	//depricated function or something and then use compiler fix
+	return controller != 0;
 }
 QWORD cs2::entity::get_player(QWORD controller)
 {
@@ -908,7 +922,12 @@ DWORD cs2::player::get_flags(QWORD player)
 {
 	return vm::read_i32(game_handle, player + netvars::m_fFlags);
 }
-
+/*
+DWORD cs2::player::get_flags(QWORD player)
+{
+	return vm::read_i32(game_handle, player + netvars::m_fFlags);
+}
+*/
 DWORD cs2::player::get_MoveType(QWORD player)
 {
 	return vm::read_i32(game_handle, player + netvars::m_MoveType);
@@ -1018,7 +1037,8 @@ cs2::WEAPON_CLASS cs2::player::get_weapon_class(QWORD player)
 	//
 	// C_EconEntity::m_AttributeManager + C_AttributeContainer::m_Item + C_EconItemView::m_iItemDefinitionIndex
 	//
-	WORD weapon_index = vm::read_i16(game_handle, weapon + 0x1098 + 0x50 + 0x1BA);
+	//old offset was									   0x1098
+	WORD weapon_index = vm::read_i16(game_handle, weapon + 0x1090 + 0x50 + 0x1BA);
 
 		/* shotgun */
 	{
