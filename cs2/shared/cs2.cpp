@@ -39,11 +39,11 @@ namespace cs2
 		QWORD matchmakingdll;
 
 		//offsets from a2x dumper but i could probably add it in later  (-edit- nvm im a paster idc enough)
-		DWORD m_bBombPlanted = 0x9DD;				// bool
-		DWORD m_bBombDropped = 0x9DC;				// bool
-		DWORD dwGameRules = 0x1A00D08;				//pointer
+		DWORD m_bBombPlanted = 0x1ABB;				// bool
+		DWORD m_bBombDropped = 0x9A4;				// bool
+		DWORD dwGameRules = 0x1A03F58;				//pointer
 
-		DWORD dwGlobalVars = 0x1801BF0;				//pointer
+		DWORD dwGlobalVars = 0x1804C58;				//pointer
 
 		QWORD game_rules;
 		QWORD global_vars;
@@ -66,8 +66,8 @@ namespace cs2
 	}
 	namespace netvars
 	{
-		static int m_nTickBase = 0x600; // uint32
-		static int m_flSimulationTime = 0x398; // float32
+		static int m_nTickBase = 0x5F8; // uint32
+		static int m_flSimulationTime = 0x390; // float32
 		static int m_entitySpottedState = 0;//m_entitySpottedState = 0x1698;
 		static int m_bSpotted = 0; //m_bSpotted = 0x8;
 		static int m_bSpottedByMask = 0; // m_bSpottedByMask = 0xC;
@@ -89,7 +89,7 @@ namespace cs2
 		static int m_iShotsFired = 0;
 		//static int m_angEyeAngles = 0;	unused and broken as of now
 		static int m_iIDEntIndex = 0x13A8;	//function broke so were getting it from a2x dumper like a paster :)
-		static int m_iOldIDEntIndex = 0x15BC;
+		static int m_iOldIDEntIndex = 0x13CC;
 		static int m_vOldOrigin = 0;
 		static int m_pClippingWeapon = 0;
 		static int v_angle = 0;
