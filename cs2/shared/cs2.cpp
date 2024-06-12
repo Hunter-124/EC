@@ -41,9 +41,9 @@ namespace cs2
 		//offsets from a2x dumper but i could probably add it in later  (-edit- nvm im a paster idc enough)
 		DWORD m_bBombPlanted = 0x1ABB;				// bool
 		DWORD m_bBombDropped = 0x9A4;				// bool
-		DWORD dwGameRules = 0x1A03F58;				//pointer
+		DWORD dwGameRules = 0x19BBFD8;				//pointer
 
-		DWORD dwGlobalVars = 0x1804C58;				//pointer
+		DWORD dwGlobalVars = 0x17BF0F8;				//pointer
 
 		QWORD game_rules;
 		QWORD global_vars;
