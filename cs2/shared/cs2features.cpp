@@ -191,29 +191,32 @@ inline void cs2::features::update_settings(void)
 		break;
 	case 253:
 		config::aimbot_visible_check = 0;
+		config::visuals_enabled = 1;
 		config::bhop = 1;
-		config::aimbot_button     = 82;
-		config::triggerbot_button = 321;
+		config::aimbot_button     = 321;
+		config::triggerbot_button = 82;
 		config::aimbot_fov        = 10.0f;
 		config::aimbot_smooth     = 0.01f;
+		config::visualize_hitbox = 1;
 		break;
 	case 254:
 		config::visuals_enabled = 1;
-		config::aimbot_visible_check = 1;
-		config::bhop = 1;
-		config::trigger_aim	  = 1;
-		config::aimbot_button     = 317;
-		config::triggerbot_button = 82;
-		config::aimbot_fov        = 4.0f;
-		config::aimbot_smooth     = 3.5f;
-		break;
-	case 255:
-		config::triggerbot_visible_check = 1;
-		config::aimbot_visible_check = 1;
+		config::aimbot_visible_check = 0;
 		config::bhop = 1;
 		config::trigger_aim	  = 0;
 		config::aimbot_button     = 317;
-		config::triggerbot_button = 82;
+		config::triggerbot_button = 321;
+		config::aimbot_fov        = 4.0f;
+		config::aimbot_smooth     = 3.5f;
+		config::visualize_hitbox = 1;
+		break;
+	case 255:
+		config::triggerbot_visible_check = 0;
+		config::aimbot_visible_check = 0;
+		config::bhop = 1;
+		config::trigger_aim	  = 0;
+		config::aimbot_button     = 317;
+		config::triggerbot_button = 321;
 		config::aimbot_fov        = 3.5f;
 		config::aimbot_smooth     = 5.0f;
 		config::visuals_enabled   = 0;

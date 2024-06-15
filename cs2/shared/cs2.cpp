@@ -898,10 +898,12 @@ BOOL cs2::offsets::get_BombDropped()
 	return bomb_down;
 }
 
+/*
 QWORD cs2::offsets::get_accept_state()
 {
 	return (cs2::offsets::matchmakingdll);
 }
+*/
 
 DWORD cs2::player::get_health(QWORD player)
 {
