@@ -225,16 +225,16 @@ inline void cs2::features::update_settings(void)
 		break;
 	default:
 		config::spotted_esp = 0;
-		config::aimbot_visible_check = 1;
+		config::aimbot_visible_check = 0;
 		config::triggerbot_visible_check = 0;
-		config::bhop = 1;
+		config::bhop = 0;
 		config::trigger_aim	  = 0;
 		config::aimbot_button     = 317;
-		config::triggerbot_button = 82; //left alt
-		config::aimbot_fov        = 2.0f;
+		config::triggerbot_button = 321; //left alt
+		config::aimbot_fov        = 0.0f;
 		config::aimbot_smooth     = 5.0f;
-		config::visuals_enabled   = 0; //esp > legit
-		config::visualize_hitbox  = 1;
+		config::visuals_enabled   = 1; //esp > legit
+		config::visualize_hitbox  = 0;
 		break;
 	}
 
@@ -613,7 +613,7 @@ void cs2::features::run(void)
 	float aimbot_fov = 360.0f;
 
 	
-	if ((!b_aimbot_button) || ((config::aimbot_visible_check) && (~cs2::player::get_spottedByMask(best_target) & (1 << local_player_index - 1))))
+	if ((!b_aimbot_button) || ((config::aimbot_visible_check) && (~cs2::player::get_spottedByMask(best_target) & (1 << (local_player_index - 1)))))
 	{
 		return;
 	}
@@ -873,7 +873,7 @@ static void cs2::features::get_best_target(BOOL ffa, QWORD local_controller, QWO
 		}
 
 		BOOL spotted;
-		if ((cs2::player::get_spottedByMask(player)) & (1 << local_player_index - 1))
+		if ((cs2::player::get_spottedByMask(player)) & (1 << (local_player_index - 1)))
 		{
 			spotted = 1;
 		}
