@@ -41,7 +41,7 @@ namespace cs2
 		//offsets from a2x dumper but i could probably add it in later  (-edit- nvm im a paster idc enough)
 		DWORD m_bBombPlanted = 0x9A5;				// bool
 		DWORD m_bBombDropped = 0x9A4;				// bool
-		DWORD dwGameRules = 0x1A1B748;				//pointer
+		DWORD dwGameRules = 0x1A1B668;				//pointer
 
 		DWORD dwGlobalVars = 0x1817638;				//pointer
 
@@ -699,7 +699,7 @@ BOOL cs2::sdl::get_window_info(QWORD window, WINDOW_INFO *info)
 }
 QWORD cs2::sdl::get_window_data(QWORD window)
 {
-	return vm::read_i64(game_handle, window + 0x120);
+	return vm::read_i64(game_handle, window + 0x128);
 }
 QWORD cs2::sdl::get_hwnd(QWORD window_data)
 {
