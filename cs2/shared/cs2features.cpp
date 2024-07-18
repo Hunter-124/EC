@@ -19,7 +19,6 @@ namespace features
 	BOOL             b_aimbot_button;
 	BOOL             b_triggerbot_button;
 
-
 	//
 	// triggerbot
 	//
@@ -35,12 +34,12 @@ namespace features
 	// aimbot
 	//
 	float target_distance;
-	static DWORD lock_delay;
-	static BOOL	 locked;
-	static BOOL  locked_onshot;
+	DWORD		 lock_delay;
+	BOOL		 locked;
+	BOOL		 locked_onshot;
 	static BOOL  aimbot_active;
 	static QWORD aimbot_target;
-	static int   aimbot_bone;
+	int   aimbot_bone;
 	static DWORD aimbot_ms;
 	static int local_player_index;
 	//
@@ -184,43 +183,48 @@ inline void cs2::features::update_settings(void)
 		config::aimbot_smooth     = 4.5f;
 		break;
 	case 252:
-		config::aimbot_button     = 317;
-		config::triggerbot_button = 321;
-		config::aimbot_fov        = 3.0f;
-		config::aimbot_smooth     = 4.0f;
-		break;
-	case 253:
 		config::aimbot_visible_check = 0;
 		config::visuals_enabled = 1;
 		config::bhop = 1;
-		config::aimbot_button     = 321;
+		config::aimbot_button = 321;
 		config::triggerbot_button = 82;
-		config::aimbot_fov        = 10.0f;
-		config::aimbot_smooth     = 0.01f;
+		config::aimbot_fov = 10.0f;
+		config::aimbot_smooth = 0.01f;
+		config::visualize_hitbox = 1;
+		break;
+	case 253:
+		config::visuals_enabled = 1;
+		config::aimbot_visible_check = 0;
+		config::bhop = 0;
+		config::trigger_aim = 1;
+		config::aimbot_button = 317;
+		config::triggerbot_button = 321;
+		config::aimbot_fov = 4.0f;
+		config::aimbot_smooth = 3.5f;
 		config::visualize_hitbox = 1;
 		break;
 	case 254:
 		config::visuals_enabled = 1;
 		config::aimbot_visible_check = 0;
-		config::bhop = 1;
+		config::bhop = 0;
 		config::trigger_aim	  = 0;
 		config::aimbot_button     = 317;
 		config::triggerbot_button = 321;
-		config::aimbot_fov        = 4.0f;
-		config::aimbot_smooth     = 3.5f;
+		config::aimbot_fov        = 2.5f;
+		config::aimbot_smooth     = 5.0f;
 		config::visualize_hitbox = 1;
 		break;
 	case 255:
 		config::triggerbot_visible_check = 0;
 		config::aimbot_visible_check = 0;
-		config::bhop = 1;
+		config::bhop = 0;
 		config::trigger_aim	  = 0;
 		config::aimbot_button     = 317;
 		config::triggerbot_button = 321;
-		config::aimbot_fov        = 3.5f;
+		config::aimbot_fov        = 0.0f;
 		config::aimbot_smooth     = 5.0f;
-		config::visuals_enabled   = 0;
-		config::spotted_esp = 1;
+		config::visuals_enabled   = 1;
+		config::spotted_esp = 0;
 		config::visualize_hitbox  = 1;
 		break;
 	default:
@@ -230,7 +234,7 @@ inline void cs2::features::update_settings(void)
 		config::bhop = 0;
 		config::trigger_aim	  = 0;
 		config::aimbot_button     = 317;
-		config::triggerbot_button = 321; //left alt
+		config::triggerbot_button = 321;
 		config::aimbot_fov        = 0.0f;
 		config::aimbot_smooth     = 5.0f;
 		config::visuals_enabled   = 1; //esp > legit
@@ -292,12 +296,15 @@ static void cs2::features::has_target_event(QWORD local_player, QWORD target_pla
 
 	if (b_triggerbot_button && mouse_down_ms == 0)
 	{
+		//LOG("aimbot_bone: %d", aimbot_bone);
+
 		float accurate_shots_fl = -0.08f;
+		/*
 		if (weapon_class == cs2::WEAPON_CLASS::Pistol)
 		{
-			accurate_shots_fl = -0.04f;
+			accurate_shots_fl = -0.08f;
 		}
-
+		*/
 		//
 		// accurate shots only
 		//
@@ -314,39 +321,41 @@ static void cs2::features::has_target_event(QWORD local_player, QWORD target_pla
 			};
 
 			//these values could be optimized more i kinda guestimated them but i tested that they work
+
+				
 			switch (aimbot_bone)
 			{
 			case 1:
 				coll = {
-					6.800000f, {-0.300000f, 1.800000f,  0.000000f},  {10.600000f,  0.150000f, 0.000000f}
+					8.2f, {0.400000f, 0.000000f,  2.000000f},  {0.000000f,  0.000000f, -2.000000f}
 				};
 				break;
 				//body
 			case 2:
 				coll = {
-					5.800000f, {-0.300000f, 1.800000f,  0.000000f},  {10.600000f,  0.150000f, 0.000000f}
+					8.2f, {0.000000f, 0.000000f,  2.000000f},  {0.000000f,  0.000000f, -2.000000f}
 				};
 				break;
 				//stomach
 			case 3:
 				coll = {
-					6.800000f, {-0.300000f, 1.800000f,  0.000000f},  {10.600000f,  0.150000f, 0.000000f}
-				};
+					8.2f, {0.000000f, 0.000000f,   2.000000f},  {0.000000f,  0.000000f, -2.000000f}
+				};	
 				break;
 			case 4:
 				coll = {
-					6.800000f, {-0.300000f, 1.800000f,  0.000000f},  {10.600000f,  0.150000f, 0.000000f}
+					8.2f, {0.000000f, 0.000000f,   2.000000f},  {0.000000f,  0.000000f, -2.000000f}
 				};
 				break;
 			case 5:
 				coll = {
-					3.600000f, {-0.300000f, 1.800000f,  0.000000f},  {3.000000f,  0.120000f, 0.000000f}
+					6.2f, {0.000000f, 0.000000f,   2.000000f},  {0.000000f,  0.000000f, -2.000000f}
 				};
 				break;
 			case 6: //head
 				coll = {
 					//	r						min											max							
-					3.20000f, {-0.200000f, -1.100000f, 0.000000f},  {3.600000f,  1.100000f, 0.000000f}
+					3.2f, {0.000000f, 0.000000f,   -4.000000f},  {0.000000f,  0.000000f, 2.000000f}
 				};
 				bone.z += 2;
 				break;
@@ -637,7 +646,7 @@ void cs2::features::run(void)
 		}
 		else
 		{
-			for (DWORD i = 2; i < 7; i++)
+			for (DWORD i = 1; i < 7; i++)
 			{
 				vec3 pos{};
 				if (!cs2::node::get_bone_position(node, i, &pos))
@@ -675,6 +684,7 @@ void cs2::features::run(void)
 		render_normal_position(aimbot_pos,6, 6, 255, 0, 0);
 	}
 
+	/*
 	if (event_state == 0)
 	{
 		if (aimbot_fov != 360.0f)
@@ -682,6 +692,7 @@ void cs2::features::run(void)
 			features::has_target_event(local_player, aimbot_target, aimbot_fov, aim_punch, aimbot_angle, view_angle, aimbot_pos);
 		}
 	}
+	*/
 
 	if (aimbot_fov > config::aimbot_fov)
 	{
@@ -752,7 +763,7 @@ void cs2::features::run(void)
 		//locked
 		else if (locked == 1)
 		{
-			ms = 2;
+			ms = 4;
 		}
 	}
 
@@ -817,7 +828,8 @@ static void cs2::features::get_best_target(BOOL ffa, QWORD local_controller, QWO
 	vec3  angle{};
 	vec3  aimpos{};
 	QWORD best_node = 0;
-	
+	 
+
 	for (int i = 1; i < 32; i++)
 	{
 		QWORD ent = cs2::entity::get_client_entity(i);
@@ -895,12 +907,11 @@ static void cs2::features::get_best_target(BOOL ffa, QWORD local_controller, QWO
 		{
 			continue;
 		}
-		
 
 		vec3 best_angle = get_target_angle(local_player, head, num_shots, aim_punch);
 
 		float fov = math::get_fov(va, *(vec3*)&best_angle);
-		
+
 		if (fov < best_fov)
 		{
 			best_fov = fov;
@@ -910,6 +921,8 @@ static void cs2::features::get_best_target(BOOL ffa, QWORD local_controller, QWO
 			best_node = node;
 		}
 	}
+
+
 	
 	if (b_triggerbot_button && !b_aimbot_button)
 	{
