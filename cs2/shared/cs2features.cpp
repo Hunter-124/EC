@@ -18,7 +18,7 @@ namespace features
 	cs2::WEAPON_CLASS weapon_class;
 	BOOL             b_aimbot_button;
 	BOOL             b_triggerbot_button;
-
+	
 	//
 	// triggerbot
 	//
@@ -46,11 +46,13 @@ namespace features
 	// infov event state
 	//
 	static BOOL event_state;
+	static int crosshair_alpha;
+	
 
-	DWORD defuse_time;
-	BOOL oneshot_rising;
-	QWORD diffusing_player;
-	DWORD total_diffuse_time = 10000;
+	DOUBLE defuse_time;
+	BOOL defusing;
+	QWORD defusing_player;
+	DOUBLE total_defusing_time = 10000;
 
 	BOOL bomb_planted;
 	DWORD bomb_time;
@@ -72,7 +74,7 @@ namespace features
 	inline void update_settings(void);
 
 	
-	static void has_target_event(QWORD local_player, QWORD target_player, float fov, vec2 aim_punch, vec3 aimbot_angle, vec2 view_angle, vec3 bone);
+	static void has_target_event(QWORD local_player, QWORD target_player, vec2 aim_punch, vec3 aimbot_angle, vec2 view_angle, vec3 bone);
 
 
 	static vec3 get_target_angle(QWORD local_player, vec3 position, DWORD num_shots, vec2 aim_punch);
@@ -108,8 +110,6 @@ inline DWORD random_number(DWORD min, DWORD max)
 
 inline void cs2::features::update_settings(void)
 {
-	int crosshair_alpha = cs2::get_crosshairalpha();
-
 	//
 	// default global settings
 	//
@@ -170,10 +170,13 @@ inline void cs2::features::update_settings(void)
 	// mouse1 aimkey, mouse5 triggerkey
 	//
 	case 250:
-		config::aimbot_button     = 317;
-		config::triggerbot_button = 321;
-		config::aimbot_fov        = 2.0f;
-		config::aimbot_smooth     = 5.0f;
+		config::rcs = 0;
+		config::aimbot_enabled = 0;
+		config::aimbot_multibone = 0;
+		config::aimbot_button     = 0;
+		config::triggerbot_button = 0;
+		config::aimbot_fov        = 0;
+		config::aimbot_smooth     = 0;
 		config::visuals_enabled   = 0;
 		break;
 	case 251:
@@ -264,7 +267,7 @@ inline void cs2::features::update_settings(void)
 // this event is called from get best target/aimbot,
 // when we have active target
 //
-static void cs2::features::has_target_event(QWORD local_player, QWORD target_player, float fov, vec2 aim_punch, vec3 aimbot_angle, vec2 view_angle, vec3 bone)
+static void cs2::features::has_target_event(QWORD local_player, QWORD target_player, vec2 aim_punch, vec3 aimbot_angle, vec2 view_angle, vec3 bone)
 {
 #ifndef __linux__
 	UNREFERENCED_PARAMETER(local_player);
@@ -272,10 +275,10 @@ static void cs2::features::has_target_event(QWORD local_player, QWORD target_pla
 	UNREFERENCED_PARAMETER(aimbot_angle);
 	UNREFERENCED_PARAMETER(bone);
 #endif
-
+	/*
 	if (config::visuals_enabled)
 	{
-
+		
 		if (fov < 5.0f)
 		{
 			//
@@ -283,16 +286,8 @@ static void cs2::features::has_target_event(QWORD local_player, QWORD target_pla
 			//
 		}
 
-		//
-		// update ESP
-		//
-		/*
-		if (event_state == 0)
-		{
-			esp(local_player, target_player, bone);
-		}
-		*/
 	}
+	*/
 
 	if (b_triggerbot_button && mouse_down_ms == 0)
 	{
@@ -315,51 +310,40 @@ static void cs2::features::has_target_event(QWORD local_player, QWORD target_pla
 				vec3  min;
 				vec3  max;
 			} COLL;
-			
+
+			/*	Default
 			COLL coll = {
 				2.800000f, {-0.200000f, 1.100000f,  0.000000f},  {3.600000f,  0.100000f, 0.000000f}
 			};
+			*/
+			
+			float radius;// = 6.8f;
+			float localViewangle = cs2::player::get_eye_angles(local_player).x;
+			float targetViewangle = cs2::player::get_eye_angles(target_player).x;
+			int angleDiff = ((int)(localViewangle - targetViewangle));
+			if (angleDiff < 0) angleDiff *= -1;//abs value
 
-			//these values could be optimized more i kinda guestimated them but i tested that they work
-
-				
-			switch (aimbot_bone)
+			if ((angleDiff < 20) || (angleDiff > 340) || ((angleDiff > 160) && (angleDiff < 240)))
 			{
-			case 1:
-				coll = {
-					8.2f, {0.400000f, 0.000000f,  2.000000f},  {0.000000f,  0.000000f, -2.000000f}
-				};
-				break;
-				//body
-			case 2:
-				coll = {
-					8.2f, {0.000000f, 0.000000f,  2.000000f},  {0.000000f,  0.000000f, -2.000000f}
-				};
-				break;
-				//stomach
-			case 3:
-				coll = {
-					8.2f, {0.000000f, 0.000000f,   2.000000f},  {0.000000f,  0.000000f, -2.000000f}
-				};	
-				break;
-			case 4:
-				coll = {
-					8.2f, {0.000000f, 0.000000f,   2.000000f},  {0.000000f,  0.000000f, -2.000000f}
-				};
-				break;
-			case 5:
-				coll = {
-					6.2f, {0.000000f, 0.000000f,   2.000000f},  {0.000000f,  0.000000f, -2.000000f}
-				};
-				break;
-			case 6: //head
-				coll = {
-					//	r						min											max							
-					3.2f, {0.000000f, 0.000000f,   -4.000000f},  {0.000000f,  0.000000f, 2.000000f}
-				};
-				bone.z += 2;
-				break;
+				radius = 6.8f;
 			}
+			else radius = 5.4f;
+
+			COLL coll;
+			if (aimbot_bone == 6)
+			{
+				bone.z += 2.5f;
+				coll = {
+					(0.4f * radius), {0.000000f, -0.000000f,  -5.0f},  {0.000000f,  -0.000000f, 5.0f}
+				};
+			}
+			else
+			{
+				coll = {
+					radius, {0.000000f, -0.000000f,  -5.0f},  {0.000000f,  -0.000000f, 5.0f}
+				};
+			}
+
 			vec3 dir = math::vec_atd(vec3{view_angle.x, view_angle.y, 0});
 			vec3 eye = cs2::player::get_eye_position(local_player);
 			matrix3x4_t matrix{};
@@ -398,7 +382,6 @@ static void cs2::features::has_target_event(QWORD local_player, QWORD target_pla
 
 void cs2::features::run(void)
 {
-
 	//bomb timer esp
 	if (cs2::offsets::get_BombPlanted() & 1)
 	{
@@ -417,38 +400,45 @@ void cs2::features::run(void)
 			return;
 
 		vec2 screen_size{};
-		screen_size.x = (float)window.w;
-		screen_size.y = (float)window.h;
-		float timeleft = (float)(bomb_time - current_ms);
+		screen_size.x = window.w;
+		screen_size.y = window.h;
+		DWORD timeleft = (bomb_time - current_ms);
 
 		int r = 0;
 		int g = 100;
 		int b = 255;
 
-		if (timeleft < 11100)
-		{
-			r = 210;
-			b = 120;
-			g = 0;
-		}
 		if (timeleft < 6100)
 		{
 			r = 255;
 			b = 0;
 			g = 0;
 		}
+		else if (timeleft < 11100)
+		{
+			r = 210;
+			b = 120;
+			g = 0;
+		}
+		else
+		{
+			r = 255;
+			g = 255;
+			b = 255;
+		}
+		
 
-		int box_width = (int)((float)screen_size.x * (float)((float)(timeleft) / (float)41200));
-		int y = (int)screen_size.y - 8;
+		int bar_length = (int)(screen_size.x * (float)((timeleft) / 41200));
+		int bar_height = (int)screen_size.y - 8;
 
 #ifdef __linux__
-		client::DrawfillRect((void*)0, 0, y, box_width, 8, (unsigned char)r, (unsigned char)g, (unsigned char)b);
+		client::DrawfillRect((void*)0, 0, bar_height, bar_length, 8, (unsigned char)r, (unsigned char)g, (unsigned char)b);
 #else
 		QWORD sdl_window_data = cs2::sdl::get_window_data(sdl_window);
 		if (sdl_window_data == 0)
 			return;
 		QWORD hwnd = cs2::sdl::get_hwnd(sdl_window_data);
-		client::DrawFillRect((void*)hwnd, 0, y, box_width, 8, (unsigned char)r, (unsigned char)g, (unsigned char)b);
+		client::DrawFillRect((void*)hwnd, 0, bar_height, bar_length, 8, (unsigned char)r, (unsigned char)g, (unsigned char)b);
 #endif
 	}
 	
@@ -457,13 +447,6 @@ void cs2::features::run(void)
 		bomb_planted = 0;
 	}
 
-
-	//reset diffuse esp
-	if (!cs2::player::is_defusing(diffusing_player) && !oneshot_rising)
-	{
-		oneshot_rising = 1;
-		diffusing_player = 0;
-	}
 	//bhop on or off
 	if (config::bhop)
 	{
@@ -516,12 +499,14 @@ void cs2::features::run(void)
 		return;
 	}
 
-
 	//
 	// update cheat settings
 	//
-	update_settings();
-
+	if (crosshair_alpha != cs2::get_crosshairalpha())
+	{
+		crosshair_alpha = cs2::get_crosshairalpha();
+		update_settings();
+	}
 
 
 	//
@@ -877,11 +862,30 @@ static void cs2::features::get_best_target(BOOL ffa, QWORD local_controller, QWO
 		{
 			continue;
 		}
-		
+
 		vec3 head{};
 		if (!cs2::node::get_bone_position(node, 6, &head))
 		{
 			continue;
+		}
+
+		//defusal progress esp
+		if (cs2::player::is_defusing(player) && !defusing)
+		{
+			defusing = 1;
+			defusing_player = player;
+			DWORD currentms = cs2::engine::get_current_ms();
+			total_defusing_time = cs2::entity::has_defuser(player) ? 4000 : 10000;
+			defuse_time = currentms + total_defusing_time;
+		}
+		if (defusing)
+		{
+			if (!cs2::player::is_defusing(defusing_player) && defusing) defusing = 0;
+
+			DWORD currentms = cs2::engine::get_current_ms();
+			double bar_length = ((defuse_time - currentms) / total_defusing_time);
+			int width = (int)(40.f * (bar_length));
+			render_normal_position(vec3(head.x, head.y, (head.z + 20)), width, 3, 50, 50, 255);
 		}
 
 		BOOL spotted;
@@ -921,12 +925,9 @@ static void cs2::features::get_best_target(BOOL ffa, QWORD local_controller, QWO
 			best_node = node;
 		}
 	}
-
-
 	
-	if (b_triggerbot_button && !b_aimbot_button)
+	if (b_triggerbot_button)
 	{
-
 		vec3 pos{};
 		vec3 best_pos{};
 		for (int i = 1; i < 7; i++)
@@ -960,17 +961,8 @@ static void cs2::features::get_best_target(BOOL ffa, QWORD local_controller, QWO
 		if (best_fov != 360.0f)
 		{
 			event_state = 1;
-			features::has_target_event(local_player, *target, best_fov, aim_punch, angle, va, aimpos);
+			features::has_target_event(local_player, *target, aim_punch, angle, va, aimpos);
 		}
-	}
-	else
-	{
-		if (best_fov != 360.0f)
-		{
-			event_state = 1;
-			features::has_target_event(local_player, *target, best_fov, aim_punch, angle, va, aimpos);
-		}
-	
 	}
 }
 
@@ -1110,40 +1102,11 @@ static void cs2::features::esp(QWORD local_player, QWORD target_player, vec3 hea
 	{
 		return;
 	}
-	
-	//defusal progress esp
-	if (cs2::player::is_defusing(target_player))
-	{
-		diffusing_player = target_player;
-
-		DWORD currentms = cs2::engine::get_current_ms();
-
-		if (cs2::entity::has_defuser(target_player) & oneshot_rising)
-		{
-			total_diffuse_time = 4000;
-			defuse_time = currentms + total_diffuse_time;
-			oneshot_rising = 0;
-		}
-		else if (oneshot_rising)
-		{
-			total_diffuse_time = 10000;
-			defuse_time = currentms + total_diffuse_time;
-			oneshot_rising = 0;
-		}
-		if (!oneshot_rising)
-		{
-			float bar_length = ((float)(defuse_time - currentms) / (float)total_diffuse_time);
-			int width = (int)((float)40 * (bar_length));
-			head.z += 20;
-			render_normal_position(head, width, 3, 50, 50, 255);
-		}
-	}
 
 	float target_health = ((float)cs2::player::get_health(target_player) / 100.0f) * 255.0f;
 	float r = 255.0f - target_health;
 	float g = target_health;
 	float b = 0.00f;
-
 
 	if (config::visuals_enabled == 2)
 	{
